@@ -9,7 +9,7 @@ const client = new MainClient({
 });
 
 const getStack = async (coin1, coin2) => {
-    return await client.getOrderBook({symbol: `${coin1}${coin2}`})
+    return await client.getOrderBook({symbol: `${coin1}${coin2}`, limit: 1000})
 }
 
 export const _ = {getStack}
