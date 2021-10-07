@@ -64,7 +64,7 @@ const getSellInfo = async (params) => {
         asks: ratesJson
     }
 
-    let text = `Стакан ${coin1}_${coin2}${rate ? `, при максимальной цене ${rate} ${coin2}` : ""}:<br/>` +
+    let text = `Стакан ${coin1}_${coin2}${rate ? `, при минимальной цене ${rate} ${coin2}` : ""}:<br/>` +
         `<br /> Всего в стакане ${allCoin1} ${coin1} на ${allPrice} ${coin2}` +
         `<br />${amount ? `Можно продать ${availableToSell} ${coin1} за ${priceToSell} ${coin2}, при средней цене ${averagePrice} ${coin2}<br />` : ``}` +
         `<br />${ratesMsg}<br/><br />`
