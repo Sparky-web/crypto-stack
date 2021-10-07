@@ -33,7 +33,7 @@ const getSellInfo = async (params) => {
     let {coin2, coin1, rate, amount, output} = params
 
     const data = await binance.getStack(coin1, coin2)
-    let asks = rate ? data.bids.filter(e => +e[0] >= +rate) : data.bids
+    let asks = rate ? data.bids.filter(e => (+e[0] >= +rate)) : data.bids
 
     let ratesJson = asks.map(e => ({amount: +e[1], rate: +e[0]}))
     let ratesMsg = asks.map(e => `${e[1]} ${coin1} по ${e[0]} ${coin2}`).join("<br />")
@@ -77,7 +77,7 @@ const getBuyInfo = async (params) => {
     let {coin2, coin1, rate, amount, output, type} = params
 
     const data = await binance.getStack(coin1, coin2)
-    let asks = rate ? data.asks.filter(e => +e[0] <= +rate) : data.asks
+    let asks = rate ? data.asks.filter(e => (+e[0] <= +rate)) : data.asks
 
     let ratesJson = asks.map(e => ({amount: +e[1], rate: +e[0]}))
     let ratesMsg = asks.map(e => `${e[1]} ${coin1} по ${e[0]} ${coin2}`).join("<br />")
