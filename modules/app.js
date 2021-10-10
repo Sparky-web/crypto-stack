@@ -1,10 +1,6 @@
 import express from "express";
 import binance from "./binance.js";
 
-const buy = (rate, amount, asks) => {
-
-}
-
 const launchApp = async () => {
     const app = express()
 

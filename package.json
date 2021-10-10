@@ -12,7 +12,9 @@
   "type": "module",
   "dependencies": {
     "binance": "^2.0.14",
-    "express": "^4.17.1"
+    "express": "^4.17.1",
+    "lodash": "^4.17.21",
+    "lowdb": "^3.0.0"
   },
   "devDependencies": {
     "dotenv": "^10.0.0"
