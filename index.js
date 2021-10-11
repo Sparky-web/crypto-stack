@@ -9,7 +9,7 @@ import binance from "./modules/binance.js";
 const db = await database.getDb()
 state.db = db
 
-console.log(await binance.getPairs())
+console.log(await binance.getUSDTPairs())
 launchApp()
 
 

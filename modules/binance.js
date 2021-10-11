@@ -12,9 +12,10 @@ const getStack = async (coin1, coin2) => {
     return await client.getOrderBook({symbol: `${coin1}${coin2}`, limit: 1000})
 }
 
-const getPairs = async () => {
-    return await client.getAssetDetail()
+const getUSDTPairs = async () => {
+    const {symbols} =  await client.getExchangeInfo()
+    return symbols.map(e=>e.symbol).filter(e => e.slice(1).slice(-4) === "USDT")
 }
 
-export const _ = {getStack, getPairs}
+export const _ = {getStack, getUSDTPairs}
 export default _
