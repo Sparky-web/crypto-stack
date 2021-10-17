@@ -1,12 +1,15 @@
 import express from "express";
 import binance from "./binance.js";
+import state from "./state.js";
+import {formatDistance} from "date-fns";
+import ru from "date-fns/locale/ru/index.js"
 
 const launchApp = async () => {
     const app = express()
 
     app.get("/", async (req, res) => {
         try {
-            let {coin2, coin1, rate, amount, output, type} = req.query
+            let {coin2, coin1, output, type} = req.query
 
             if(!(coin1 && coin2)) throw new Error("Нужно передать как минимум coin1 и coin2 параметры")
 
@@ -26,9 +29,9 @@ const launchApp = async () => {
 }
 
 const getSellInfo = async (params) => {
-    let {coin2, coin1, rate, amount, output} = params
+    let {coin2, coin1, rate, amount, minutesBack} = params
 
-    const data = await binance.getStack(coin1, coin2)
+    const data = minutesBack ? state.pairs[`${coin1}${coin2}`].history[minutesBack - 1] : await binance.getStack(coin1, coin2)
     let asks = rate ? data.bids.filter(e => (+e[0] >= +rate)) : data.bids
 
     let ratesJson = asks.map(e => ({amount: +e[1], rate: +e[0]}))
@@ -60,7 +63,7 @@ const getSellInfo = async (params) => {
         asks: ratesJson
     }
 
-    let text = `Стакан ${coin1}_${coin2}${rate ? `, при минимальной цене ${rate} ${coin2}` : ""}:<br/>` +
+    let text = `Стакан ${coin1}_${coin2}${rate ? `, при минимальной цене ${rate} ${coin2}` : ""} ${minutesBack ? formatDistance(new Date(), new Date(data.update), {locale: ru}) + " назад": "" }: <br/>` +
         `<br /> Всего в стакане ${allCoin1} ${coin1} на ${allPrice} ${coin2}` +
         `<br />${amount ? `Можно продать ${availableToSell} ${coin1} за ${priceToSell} ${coin2}, при средней цене ${averagePrice} ${coin2}<br />` : ``}` +
         `<br />${ratesMsg}<br/><br />`
@@ -70,9 +73,9 @@ const getSellInfo = async (params) => {
 }
 
 const getBuyInfo = async (params) => {
-    let {coin2, coin1, rate, amount, output, type} = params
+    let {coin2, coin1, rate, amount, minutesBack} = params
 
-    const data = await binance.getStack(coin1, coin2)
+    const data = minutesBack ? state.pairs[`${coin1}${coin2}`].history[minutesBack - 1] : await binance.getStack(coin1, coin2)
     let asks = rate ? data.asks.filter(e => (+e[0] <= +rate)) : data.asks
 
     let ratesJson = asks.map(e => ({amount: +e[1], rate: +e[0]}))
@@ -106,7 +109,7 @@ const getBuyInfo = async (params) => {
         asks: ratesJson
     }
 
-    let text = `Стакан ${coin1}_${coin2}${rate ? `, при максимальной цене ${rate} ${coin2}` : ""}:<br/>` +
+    let text = `Стакан ${coin1}_${coin2}${rate ? `, при максимальной цене ${rate} ${coin2}` : ""} ${minutesBack ? formatDistance(new Date(), new Date(data.update), {locale: ru}) + " назад" : ""}:<br/>` +
         `<br /> Всего в стакане ${allCoin1} ${coin1} на ${allPrice} ${coin2}` +
         `<br />${amount ? `Можно купить ${availableToBuy} ${coin1} за ${priceToBuy} ${coin2}, при средней цене ${averagePrice} ${coin2}<br />` : ``}` +
         `<br />${ratesMsg}<br/><br />`

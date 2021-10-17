@@ -1,4 +1,4 @@
-import {MainClient} from "binance"
+import {MainClient, WebsocketClient} from "binance"
 
 const publicKey = process.env.BINANCE_PUBLIC_KEY
 const secretKey = process.env.BINANCE_SECRET_KEY
@@ -8,8 +8,19 @@ const client = new MainClient({
     api_secret: secretKey,
 });
 
+const wsClient = new WebsocketClient({
+    api_key: publicKey,
+    api_secret: secretKey,
+    beautify: true,
+});
+
+
 const getStack = async (coin1, coin2) => {
     return await client.getOrderBook({symbol: `${coin1}${coin2}`, limit: 1000})
+}
+
+const getStackByFullSymbol = async (symbol) => {
+    return await client.getOrderBook({symbol, limit: 500})
 }
 
 const getUSDTPairs = async () => {
@@ -17,5 +28,5 @@ const getUSDTPairs = async () => {
     return symbols.map(e=>e.symbol).filter(e => e.slice(1).slice(-4) === "USDT")
 }
 
-export const _ = {getStack, getUSDTPairs}
+export const _ = {getStack, getUSDTPairs, client, wsClient, getStackByFullSymbol}
 export default _

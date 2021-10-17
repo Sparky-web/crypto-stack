@@ -9,7 +9,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 function createDbIfNotExists() {
     filesystem.createFileIfNotExists(".tmp/db.json",
-        `{"history": {}}`
+        `{"pairs": []}`
     )
 }
 
@@ -25,54 +25,34 @@ async function getDb() {
     return db
 }
 
-async function writeItemsIds(items, collection, db) {
-    const ids = items.map((item) => item.idStr)
-    db.data[collection].push(...ids)
-    await db.write()
-
-    return items
+async function initialize() {
+    database.db = await getDb()
+    database.db.chain = lodash.chain(database.db.data)
 }
 
-function removeExistingItemsById(items, collection, db) {
-    return items.filter(item => !(db.data[collection].find(old => old === item.idStr)))
+const getPairs = () => {
+    return database.db.data.pairs
 }
-
-async function setLastUpdate(lastUpdate, db) {
-    db.data.lastUpdate = {
-        ...lastUpdate,
-        date: Date.now(),
+const addPairs = async (pairs) => {
+    for (const pair of pairs) {
+        database.db.data.pairs.push(pair)
     }
-    await db.write()
+    await database.db.write()
 }
 
-function getNewItems(items, collection, db, options = {
-    param: null,
-    paramDb: null
-}) {
-    if (options.param && options.paramDb)
-        return items.filter(item => !(db.data[collection].find(dbItem => dbItem[options.paramDb] === item[options.param])))
-    else if (options.param)
-        return items.filter(item => !(db.data[collection].find(dbItem => dbItem === item[options.param])))
-    else if (options.paramDb)
-        return items.filter(item => !(db.data[collection].find(dbItem => dbItem[options.paramDb] === item)))
-    else
-        return items.filter(item => !(db.data[collection]).find(dbItem => dbItem === item))
+const updateHistory = async (pair, data) => {
+    database.db.data.history[pair].unshift({
+        ...data,
+        timestamp: Date.now()
+    })
+    if(database.db.data.history[pair].length > 10) database.db.data.history[pair].pop()
+
+    await database.db.write()
 }
 
-async function writeItems(items, collection, db, options = {
-    paramToWrite: null
-}) {
-    let newItems = items
-    if(options.paramToWrite) newItems = items.map(item => item[options.paramToWrite])
-    db.data[collection].push(...newItems)
-    await db.write()
-    return items
+const getHistory = (pair, minutesBack) => {
+    return database.db.data.history[pair][minutesBack - 1]
 }
 
-async function writeItem(item, collection, db) {
-    db.data[collection] = item
-    await db.write()
-    return item
-}
-
-export default {getDb, writeItemsIds, removeExistingItemsById, setLastUpdate, getNewItems, writeItems, writeItem}
+export const database = {initialize, getPairs, addPairs, updateHistory, getHistory}
+export default database

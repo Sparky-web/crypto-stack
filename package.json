@@ -12,7 +12,9 @@
   "type": "module",
   "dependencies": {
     "binance": "^2.0.14",
+    "date-fns": "^2.25.0",
     "express": "^4.17.1",
+    "fast-sort": "^3.0.3",
     "lodash": "^4.17.21",
     "lowdb": "^3.0.0"
   },
