@@ -5,6 +5,7 @@ import state from "./state.js"
 import _ from "lodash"
 
 import pkg from 'fast-sort'
+
 const {sort} = pkg
 
 const addNewPairs = async () => {
@@ -30,18 +31,49 @@ const startUpdatingPairs = async () => {
 
 const binanceMessageHandler = (data) => {
     const symbol = state.pairs[data.symbol]
-    if (!symbol) return;
 
-    updateBidsAndAsks(data)
+    if (!symbol) return;
+    if (symbol.lastUpdateId + 1 > data.lastUpdateId) return;
+    if (symbol.lastUpdateId + 1 < data.firstUpdateId && !symbol.isSubscribed && !symbol.isUpdating) {
+        console.log("too late, trying again ", data.symbol)
+        state.pairs[data.symbol].isUpdating = true
+
+        updatePair(data.symbol).then(() => state.pairs[data.symbol].isUpdating = false).catch(e => {
+            console.error(e)
+            state.pairs[data.symbol].isUpdating = false
+        })
+        return;
+    }
+
+    if (!symbol.isSubscribed) {
+        if (symbol.lastUpdateId + 1 >= data.firstUpdateId && symbol.lastUpdateId + 1 <= data.lastUpdateId) {
+            console.log("subscribed! ", data.symbol)
+            symbol.isSubscribed = true
+            state.pairs[data.symbol].isSubscribed = true
+        }
+    }
+
+    if (symbol.isSubscribed) updateBidsAndAsks(data)
 }
 
 const subscribePair = async (pair) => {
     binance.wsClient.subscribeDiffBookDepth(pair, 1000, "spot")
     await new Promise(r => setTimeout(r, 1000))
+    await updatePair(pair)
+}
+
+const updatePair = async (pair) => {
+    if (state.pairs[pair]) state.pairs[pair] = {
+        ...state.pairs[pair],
+        ...await binance.getStackByFullSymbol(pair),
+        isSubscribed: false,
+    }
 
     state.pairs[pair] = {
+        pair,
         ...await binance.getStackByFullSymbol(pair),
-        history: []
+        history: [],
+        isSubscribed: false,
     }
 }
 
@@ -89,7 +121,7 @@ const startWritingHistory = () => {
     setInterval(async () => {
         const pairs = Object.keys(state.pairs)
 
-        for(let pair of pairs) {
+        for (let pair of pairs) {
             const history = {
                 asks: state.pairs[pair].asks.slice(0, 100),
                 bids: state.pairs[pair].bids.slice(0, 100),
@@ -97,7 +129,7 @@ const startWritingHistory = () => {
             }
 
             state.pairs[pair].history.unshift(history)
-            if(state.pairs[pair].history.length > 10) state.pairs[pair].history.pop()
+            if (state.pairs[pair].history.length > 10) state.pairs[pair].history.pop()
         }
     }, 60000)
 }
@@ -107,15 +139,19 @@ const startUpdatingTruthSource = () => {
         let pairs = database.getPairs()
         const chunks = _.chunk(pairs, 10)
 
-        for(let chunk of chunks) {
+        for (let chunk of chunks) {
             await Promise.all(chunk.map(async pair => {
-                const data = await binance.getStackByFullSymbol(pair)
-                state.pairs[pair].asks = data.asks
-                state.pairs[pair].bids = data.bids
+                await updatePair(pairs)
             }))
         }
     }, 60 * 60 * 1000)
 }
 
-export const updaters = {addNewPairs, startUpdatingPairs, startAddingNewPairs, startWritingHistory, startUpdatingTruthSource}
+export const updaters = {
+    addNewPairs,
+    startUpdatingPairs,
+    startAddingNewPairs,
+    startWritingHistory,
+    startUpdatingTruthSource
+}
 export default updaters
