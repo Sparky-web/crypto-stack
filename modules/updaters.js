@@ -123,8 +123,8 @@ const startWritingHistory = () => {
 
         for (let pair of pairs) {
             const history = {
-                asks: state.pairs[pair].asks.slice(0, 100),
-                bids: state.pairs[pair].bids.slice(0, 100),
+                asks: state.pairs[pair].asks,
+                bids: state.pairs[pair].bids,
                 update: state.pairs[pair].lastUpdate
             }
 
