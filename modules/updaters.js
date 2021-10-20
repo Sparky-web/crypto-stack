@@ -20,7 +20,6 @@ const addNewPairs = async () => {
 const startUpdatingPairs = async () => {
     state.pairs = {}
     await updatePairsWithApi()
-    setInterval(updatePairsWithApi, 60000)
 
     // let pairs = database.getPairs()
     // const chunks = _.chunk(pairs, 10)
@@ -145,6 +144,7 @@ const startWritingHistory = () => {
 }
 
 const writeHistory = async () => {
+    await updatePairsWithApi()
     const pairs = Object.keys(state.pairs)
 
     for (let pair of pairs) {
