@@ -140,22 +140,24 @@ const startAddingNewPairs = async () => {
 }
 
 const startWritingHistory = () => {
-    setInterval(async () => {
-        const pairs = Object.keys(state.pairs)
-
-        for (let pair of pairs) {
-            const history = {
-                asks: state.pairs[pair].asks,
-                bids: state.pairs[pair].bids,
-                update: state.pairs[pair].lastUpdate
-            }
-
-            state.pairs[pair].history.unshift(history)
-            if (state.pairs[pair].history.length > 10) state.pairs[pair].history.pop()
-        }
-    }, 60000)
+    writeHistory().then(() => console.log("written history"))
+    setInterval(writeHistory, 60000)
 }
 
+const writeHistory = async () => {
+    const pairs = Object.keys(state.pairs)
+
+    for (let pair of pairs) {
+        const history = {
+            asks: state.pairs[pair].asks,
+            bids: state.pairs[pair].bids,
+            update: state.pairs[pair].lastUpdate
+        }
+
+        state.pairs[pair].history.unshift(history)
+        if (state.pairs[pair].history.length > 10) state.pairs[pair].history.pop()
+    }
+}
 const startUpdatingTruthSource = () => {
     setInterval(async () => {
         let pairs = database.getPairs()
