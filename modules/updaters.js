@@ -40,7 +40,7 @@ const updatePairsWithApi = async () => {
         for(let chunk of chunks) {
             await Promise.all(chunk.map(async pair => {
                 state.pairs[pair] = {
-                    ...(state.pairs[pair] || {}),
+                    ...(state.pairs[pair] || {history: []}),
                     ...await binance.getStackByFullSymbol(pair, 100)
                 }
             }))
