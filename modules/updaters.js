@@ -41,7 +41,8 @@ const updatePairsWithApi = async () => {
             await Promise.all(chunk.map(async pair => {
                 state.pairs[pair] = {
                     ...(state.pairs[pair] || {history: []}),
-                    ...await binance.getStackByFullSymbol(pair, 100)
+                    ...await binance.getStackByFullSymbol(pair, 100),
+                    lastUpdate: Date.now()
                 }
             }))
         }
