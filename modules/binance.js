@@ -19,8 +19,8 @@ const getStack = async (coin1, coin2) => {
     return await client.getOrderBook({symbol: `${coin1}${coin2}`, limit: 1000})
 }
 
-const getStackByFullSymbol = async (symbol) => {
-    return await client.getOrderBook({symbol, limit: 500})
+const getStackByFullSymbol = async (symbol, limit = 500) => {
+    return await client.getOrderBook({symbol, limit})
 }
 
 const getUSDTPairs = async () => {

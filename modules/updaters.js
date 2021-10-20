@@ -18,14 +18,35 @@ const addNewPairs = async () => {
 }
 
 const startUpdatingPairs = async () => {
-    let pairs = database.getPairs()
-    const chunks = _.chunk(pairs, 10)
     state.pairs = {}
+    await updatePairsWithApi()
+    setInterval(updatePairsWithApi, 60000)
 
-    binance.wsClient.on('formattedMessage', binanceMessageHandler)
-    for (let chunk of chunks) {
-        await Promise.all(chunk.map(subscribePair))
-        await new Promise(r => setTimeout(r, 1000))
+    // let pairs = database.getPairs()
+    // const chunks = _.chunk(pairs, 10)
+    // state.pairs = {}
+    // binance.wsClient.on('formattedMessage', binanceMessageHandler)
+    // for (let chunk of chunks) {
+    //     await Promise.all(chunk.map(subscribePair))
+    //     await new Promise(r => setTimeout(r, 1000))
+    // }
+}
+
+const updatePairsWithApi = async () => {
+    try {
+        let pairs = database.getPairs()
+        const chunks = _.chunk(pairs, 50)
+
+        for(let chunk of chunks) {
+            await Promise.all(chunk.map(async pair => {
+                state.pairs[pair] = {
+                    ...(state.pairs[pair] || {}),
+                    ...await binance.getStackByFullSymbol(pair, 100)
+                }
+            }))
+        }
+    } catch (e) {
+        console.error(e)
     }
 }
 
@@ -108,9 +129,9 @@ const startAddingNewPairs = async () => {
     setInterval(async () => {
         try {
             const newPairs = await addNewPairs()
-            for (let pair of newPairs) {
-                await subscribePair(pair)
-            }
+            // for (let pair of newPairs) {
+            //     await subscribePair(pair)
+            // }
         } catch (e) {
             console.error(e)
         }

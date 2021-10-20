@@ -14,7 +14,7 @@ console.log(await updaters.addNewPairs())
 await updaters.startUpdatingPairs()
 await updaters.startAddingNewPairs()
 await updaters.startWritingHistory()
-await updaters.startUpdatingTruthSource()
+// await updaters.startUpdatingTruthSource()
 
 console.log("up and running")
 
