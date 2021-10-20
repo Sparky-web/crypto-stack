@@ -143,6 +143,8 @@ const startUpdatingTruthSource = () => {
             await Promise.all(chunk.map(async pair => {
                 await updatePair(pairs)
             }))
+            await new Promise(r => setTimeout(r, 1000))
+
         }
     }, 60 * 60 * 1000)
 }
