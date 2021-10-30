@@ -158,6 +158,7 @@ const writeHistory = async () => {
         if (state.pairs[pair].history.length > 10) state.pairs[pair].history.pop()
     }
 }
+
 const startUpdatingTruthSource = () => {
     setInterval(async () => {
         let pairs = database.getPairs()

@@ -11,6 +11,7 @@
   "license": "ISC",
   "type": "module",
   "dependencies": {
+    "axios": "^0.24.0",
     "binance": "^2.0.14",
     "date-fns": "^2.25.0",
     "express": "^4.17.1",

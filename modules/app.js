@@ -11,7 +11,7 @@ const launchApp = async () => {
         try {
             let {coin2, coin1, output, type} = req.query
 
-            if(!(coin1 && coin2)) throw new Error("Нужно передать как минимум coin1 и coin2 параметры")
+            if (!(coin1 && coin2)) throw new Error("Нужно передать как минимум coin1 и coin2 параметры")
 
             const {text, json} = type === "buy" ? await getBuyInfo(req.query) : await getSellInfo(req.query)
 
@@ -22,6 +22,8 @@ const launchApp = async () => {
             res.send(e.stack || e)
         }
     })
+
+    app.get("/buy", buy)
 
     await app.listen(process.env.PORT)
 
@@ -63,7 +65,7 @@ const getSellInfo = async (params) => {
         asks: ratesJson
     }
 
-    let text = `Стакан ${coin1}_${coin2}${rate ? `, при минимальной цене ${rate} ${coin2}` : ""} ${minutesBack ? formatDistance(new Date(), new Date(data.update), {locale: ru}) + " назад": "" }: <br/>` +
+    let text = `Стакан ${coin1}_${coin2}${rate ? `, при минимальной цене ${rate} ${coin2}` : ""} ${minutesBack ? formatDistance(new Date(), new Date(data.update), {locale: ru}) + " назад" : ""}: <br/>` +
         `<br /> Всего в стакане ${allCoin1} ${coin1} на ${allPrice} ${coin2}` +
         `<br />${amount ? `Можно продать ${availableToSell} ${coin1} за ${priceToSell} ${coin2}, при средней цене ${averagePrice} ${coin2}<br />` : ``}` +
         `<br />${ratesMsg}<br/><br />`
@@ -85,7 +87,7 @@ const getBuyInfo = async (params) => {
     let priceToBuy = 0
 
     for (let rate of ratesJson) {
-        if(priceToBuy + (rate.amount * rate.rate) >= amount) {
+        if (priceToBuy + (rate.amount * rate.rate) >= amount) {
             const diff = amount - priceToBuy
             priceToBuy += diff
 
@@ -116,6 +118,40 @@ const getBuyInfo = async (params) => {
 
 
     return {text, json}
+}
+
+const buy = async (req, res) => {
+    try {
+        let {ticker, amount, percentage} = req.query
+
+        if (!percentage) percentage = 5
+
+        const {json: previousInfo} = await getBuyInfo({coin1: ticker, coin2: "USDT", amount: amount, minutesBack: 1})
+        const {json: infoNow} = await getBuyInfo({coin1: ticker, coin2: "USDT", amount: amount})
+
+        const previousPrice = previousInfo.averagePrice
+        const priceNow = infoNow.averagePrice
+
+        const priceToCompare = previousPrice + previousPrice / 100 * percentage
+
+        if (priceNow < priceToCompare) {
+            const data = await binance.buy(ticker, infoNow.availableToBuy, priceNow + priceNow / 100 * percentage)
+            res.send(data)
+        } else {
+            throw (`Средняя цена на покупку ${infoNow.availableToBuy} ${ticker} за ${amount} USDT (${infoNow.averagePrice}) ` +
+                `сейчас отличается от<br/> средней цены на покупку ` +
+                `${previousInfo.availableToBuy} ${ticker} за ${amount} USDT 1 минуту назад (${previousInfo.averagePrice}) ` +
+                `на больше чем ${percentage}%. ` +
+                `Покупка отменена.`
+            )
+        }
+
+
+    } catch (e) {
+        console.error(e)
+        res.status(500)
+        res.send(e.stack || e)
+    }
 }
 
 export {launchApp}
