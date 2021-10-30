@@ -50,5 +50,6 @@ const buy = async (ticker, amount, price) => {
     return await client.submitNewOrder(params)
 }
 
+
 export const _ = {getStack, getUSDTPairs, client, wsClient, getStackByFullSymbol, buy}
 export default _

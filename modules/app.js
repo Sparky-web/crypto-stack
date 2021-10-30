@@ -25,6 +25,9 @@ const launchApp = async () => {
 
     app.get("/buy", buy)
 
+    app.get("/account", async (req, res) => {
+        res.send(process.env.TEST_MODE === "true" ? await binance.client.getAccountInformation() : "Доступно только для тестового аккаунта")
+    })
     await app.listen(process.env.PORT)
 
     return app
@@ -153,5 +156,6 @@ const buy = async (req, res) => {
         res.send(e.stack || e)
     }
 }
+
 
 export {launchApp}
