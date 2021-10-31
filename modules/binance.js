@@ -10,9 +10,14 @@ const secretKey = process.env.BINANCE_SECRET_KEY
 const isTestMode = process.env.TEST_MODE === "true"
 
 const client = new MainClient({
-    api_key: isTestMode ? "7Y69ygwzy28zxvn2xiNXt2nKTWFE7CSClh9yfG5Jqjq3AI07DYwptaOqdijpB0Uh" : publicKey,
-    api_secret: isTestMode ? "wndAClZPC0gpglJ4EmMnKU9E7cmzpRoWERmqJDQdJcmNHfC4h7HfHckrPKZbmZ7p" : secretKey,
-    baseUrl: isTestMode ? "https://testnet.binance.vision" : undefined
+    api_key: publicKey,
+    api_secret: secretKey
+});
+
+const testClient = new MainClient({
+    api_key: "7Y69ygwzy28zxvn2xiNXt2nKTWFE7CSClh9yfG5Jqjq3AI07DYwptaOqdijpB0Uh",
+    api_secret: "wndAClZPC0gpglJ4EmMnKU9E7cmzpRoWERmqJDQdJcmNHfC4h7HfHckrPKZbmZ7p",
+    baseUrl: "https://testnet.binance.vision"
 });
 
 const wsClient = new WebsocketClient({
@@ -47,7 +52,7 @@ const buy = async (ticker, amount, price) => {
         timeInForce: "GTC"
     }
 
-    return await client.submitNewOrder(params)
+    return await testClient.submitNewOrder(params)
 }
 
 

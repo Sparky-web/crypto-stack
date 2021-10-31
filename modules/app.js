@@ -129,7 +129,7 @@ const buy = async (req, res) => {
 
         if (!percentage) percentage = 5
 
-        const {json: previousInfo} = await getBuyInfo({coin1: ticker, coin2: "USDT", amount: amount, minutesBack: 1})
+        const {json: previousInfo} = await getBuyInfo({coin1: ticker, coin2: "USDT", amount: amount, minutesBack: 2})
         const {json: infoNow} = await getBuyInfo({coin1: ticker, coin2: "USDT", amount: amount})
 
         const previousPrice = previousInfo.averagePrice
