@@ -56,5 +56,5 @@ const buy = async (ticker, amount, price) => {
 }
 
 
-export const _ = {getStack, getUSDTPairs, client, wsClient, getStackByFullSymbol, buy}
+export const _ = {getStack, getUSDTPairs, client, wsClient, getStackByFullSymbol, buy, testClient}
 export default _
