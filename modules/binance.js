@@ -52,7 +52,7 @@ const buy = async (ticker, amount, price) => {
         timeInForce: "GTC"
     }
 
-    return await testClient.submitNewOrder(params)
+    return await client.submitNewOrder(params)
 }
 
 
