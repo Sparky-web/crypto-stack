@@ -125,8 +125,9 @@ const getBuyInfo = async (params) => {
 
 const buy = async (req, res) => {
     try {
-        let {ticker, amount, percentage} = req.query
+        let {ticker, amount, percentage, output} = req.query
 
+        if (!output) output = "json"
         if (!percentage) percentage = 5
 
         const {json: previousInfo} = await getBuyInfo({coin1: ticker, coin2: "USDT", amount: amount, minutesBack: 2})
@@ -138,10 +139,27 @@ const buy = async (req, res) => {
         const priceToCompare = previousPrice + previousPrice / 100 * percentage
 
         if (priceNow < priceToCompare) {
-            const data = await binance.buy(ticker, infoNow.availableToBuy, priceNow + priceNow / 100 * percentage)
-            res.send(data)
+            let pricePlaced = priceNow + priceNow / 100 * percentage
+            const data = await binance.buy(ticker, infoNow.availableToBuy, pricePlaced)
+
+            output === "json" ? res.send({
+                status: "ok",
+                previousPrice,
+                priceNow,
+                pricePlaced,
+
+                binanceData: data
+            }) : `Средняя цена минуту назад: ${previousPrice}<br />` +
+                `Средняя цена сейчас: ${priceNow}<br />` +
+                `Выстовлено по цене: ${pricePlaced} (+${percentage}%)<br />` +
+                `Данные с бинанса: ${JSON.stringify(data, null, 2)}`
         } else {
-            throw (`Средняя цена на покупку ${infoNow.availableToBuy} ${ticker} за ${amount} USDT (${infoNow.averagePrice}) ` +
+            throw output === "json" ? {
+                status: "error",
+                previousPrice,
+                priceNow,
+                percentage
+            } : (`Средняя цена на покупку ${infoNow.availableToBuy} ${ticker} за ${amount} USDT (${infoNow.averagePrice}) ` +
                 `сейчас отличается от<br/> средней цены на покупку ` +
                 `${previousInfo.availableToBuy} ${ticker} за ${amount} USDT 1 минуту назад (${previousInfo.averagePrice}) ` +
                 `на больше чем ${percentage}%. ` +
