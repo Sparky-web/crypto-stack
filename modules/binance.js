@@ -32,8 +32,8 @@ const getStackByFullSymbol = async (symbol, limit = 500) => {
     return await client.getOrderBook({symbol, limit})
 }
 const getUSDTPairs = async () => {
-    const {symbols} =  await client.getExchangeInfo()
-    return symbols.map(e=>e.symbol).filter(e => e.slice(1).slice(-4) === "USDT")
+    const {symbols} = await client.getExchangeInfo()
+    return symbols.map(e => e.symbol).filter(e => e.slice(1).slice(-4) === "USDT")
 }
 const buy = async (ticker, amount, price) => {
     const {data: info} = await axios.get(`https://api.binance.com/api/v3/exchangeInfo?symbol=${ticker}USDT`)
@@ -52,9 +52,25 @@ const buy = async (ticker, amount, price) => {
         timeInForce: "GTC"
     }
 
-    return await client.submitNewOrder(params)
+    return isTestMode ? await testClient.submitNewOrder(params) : await client.submitNewOrder(params)
+}
+
+const cancelIfNotFilled = async (symbol, orderId) => {
+    const actualClient = isTestMode ? testClient : client
+
+    const order = await actualClient.getOrder({
+        symbol,
+        orderId
+    })
+
+    console.log(order)
+
+    if (order.status !== "FILLED") return await actualClient.cancelOrder({
+        symbol,
+        orderId
+    })
 }
 
 
-export const _ = {getStack, getUSDTPairs, client, wsClient, getStackByFullSymbol, buy, testClient}
+export const _ = {getStack, getUSDTPairs, client, wsClient, getStackByFullSymbol, buy, testClient, cancelIfNotFilled}
 export default _

@@ -141,6 +141,11 @@ const buy = async (req, res) => {
         if (priceNow < priceToCompare) {
             let pricePlaced = priceNow + priceNow / 100 * percentage
             const data = await binance.buy(ticker, infoNow.availableToBuy, pricePlaced)
+            const {orderId, symbol} = data
+
+            setTimeout(async () => {
+                await binance.cancelIfNotFilled(symbol, orderId).catch(console.error)
+            }, 15000)
 
             output === "json" ? res.send({
                 status: "ok",
