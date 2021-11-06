@@ -63,8 +63,6 @@ const cancelIfNotFilled = async (symbol, orderId) => {
         orderId
     })
 
-    console.log(order)
-
     if (order.status !== "FILLED") return await actualClient.cancelOrder({
         symbol,
         orderId
