@@ -139,8 +139,8 @@ const buy = async (req, res) => {
         const priceToCompare = previousPrice + previousPrice / 100 * percentage
 
         if (priceNow < priceToCompare) {
-            let pricePlaced = priceNow + priceNow / 100 * percentage
-            const data = await binance.buy(ticker, infoNow.availableToBuy, pricePlaced)
+            let pricePlaced = priceToCompare
+            const data = await binance.buy(ticker, infoNow.availableToBuy, priceToCompare)
             const {orderId, symbol} = data
 
             setTimeout(async () => {
